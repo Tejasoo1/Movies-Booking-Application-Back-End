@@ -299,7 +299,7 @@ app.post("/signup", async (req, res) => {
 //To collect the 'signin' form data.
 app.post("/signin", async (req, res) => {
   const signinDetails = req.body;
-  // console.log(signinDetails);
+  console.log(signinDetails);
 
   const signInData = await SignUpModel.findOne({ email: signinDetails.email });
 
@@ -522,19 +522,36 @@ app.post("/update/locationsandtheaters", async (req, res) => {
 });
 
 //Endpoint for updating the BookingHistory.
-app.post("/update/bookinghistory", (req, res) => {
+app.post("/update/bookinghistory", async (req, res) => {
   const data = req.body;
   console.log(data);
 
-  const BookingHistorData = new BookingHistoryModel(data);
+  const fetchedBookingUser = await BookingHistoryModel.findOne({
+    userEmail: data.userEmail,
+  });
 
-  BookingHistorData.save()
-    .then((doc) => {
-      res.send("Booking History Updated Successfully !!!");
-    })
-    .catch((err) => {
-      res.status(500).send(err);
-    });
+  if (fetchedBookingUser !== null) {
+    BookingHistoryModel.updateOne(
+      { userEmail: data.userEmail },
+      { bookingHistoryArray: data.bookingHistoryArray }
+    )
+      .then((doc) => {
+        res.send("Booking History Updated Successfully !!!");
+      })
+      .catch((err) => {
+        res.status(500).send(err);
+      });
+  } else {
+    const BookingHistoryData = new BookingHistoryModel(data);
+
+    BookingHistoryData.save()
+      .then((doc) => {
+        res.send("Booking History Updated Successfully !!!");
+      })
+      .catch((err) => {
+        res.status(500).send(err);
+      });
+  }
 });
 
 app.post("/get/bookinghistory", async (req, res) => {
